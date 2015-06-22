@@ -3,25 +3,14 @@ use warnings;
 use utf8;
 use File::Spec;
 use File::Basename;
-use lib File::Spec->catdir(dirname(__FILE__), 'extlib', 'lib', 'perl5');
-use lib File::Spec->catdir(dirname(__FILE__), 'lib');
+use lib File::Spec->catdir( dirname(__FILE__), 'extlib', 'lib', 'perl5' );
+use lib File::Spec->catdir( dirname(__FILE__), 'lib' );
 use Amon2::Lite;
 
 our $VERSION = '0.13';
 
-# put your configuration here
 sub load_config {
-    my $c = shift;
-
-    my $mode = $c->mode_name || 'development';
-
-    +{
-        'DBI' => [
-            "dbi:SQLite:dbname=$mode.db",
-            '',
-            '',
-        ],
-    }
+    return +{ 'DBI' => [ "dbi:SQLite:dbname=db/comment.db", '', '', ], };
 }
 
 get '/' => sub {
@@ -29,47 +18,41 @@ get '/' => sub {
     return $c->render('index.tt');
 };
 
-# load plugins
-__PACKAGE__->load_plugin('Web::CSRFDefender' => {
-    post_only => 1,
-});
-# __PACKAGE__->load_plugin('DBI');
-# __PACKAGE__->load_plugin('Web::FillInFormLite');
-# __PACKAGE__->load_plugin('Web::JSON');
+get '/comments' => sub {
+    my $c = shift;
+    my $comments
+        = $c->dbh->selectall_arrayref( q{SELECT author, text FROM comment}, +{ Slice => +{} } );
+    return $c->render_json($comments);
+};
 
-__PACKAGE__->enable_session();
+post '/comments' => sub {
+    my $c      = shift;
+    my $author = $c->req->param('author');
+    my $text   = $c->req->param('text');
+    unless ( $author || $text ) {
+        return $c->create_response(400);
+    }
+    $c->dbh->do( q{INSERT INTO comment (author, text) VALUES (?, ?)}, {}, $author, $text );
+    return $c->render_json( +{ author => $author, text => $text } );
+};
 
-__PACKAGE__->to_app(handle_static => 1);
+__PACKAGE__->load_plugin('DBI');
+
+__PACKAGE__->load_plugin('Web::JSON');
+
+__PACKAGE__->to_app( handle_static => 1 );
 
 __DATA__
 
 @@ index.tt
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>Sample</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script type="text/javascript" src="[% uri_for('/static/js/main.js') %]"></script>
-    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
-    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="[% uri_for('/static/css/main.css') %]">
-</head>
-<body>
-    <div class="container">
-        <header><h1>Sample</h1></header>
-        <section class="row">
-            This is a Sample
-        </section>
-        <footer>Powered by <a href="http://amon.64p.org/">Amon2::Lite</a></footer>
-    </div>
-</body>
+  <head>
+    <title>Hello React</title>
+    <link rel="stylesheet" href="/static/css/base.css" />
+  </head>
+  <body>
+    <div id="content"></div>
+    <script type="text/javascript" src="/static/js/index.js"></script>
+  </body>
 </html>
-
-@@ /static/js/main.js
-
-@@ /static/css/main.css
-footer {
-    text-align: right;
-}

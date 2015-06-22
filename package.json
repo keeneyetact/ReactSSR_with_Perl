@@ -1,0 +1,18 @@
+{
+  "name": "reactjs_server-side-rendering_with_perl",
+  "version": "1.0.0",
+  "scripts": {
+    "setup": "carton install && npm install && mkdir -p db && sqlite3 db/comment.db < sql/sqlite.sql",
+    "browserify": "browserify -t reactify static/js/_index.js -o static/js/index.js",
+    "start": "carton exec -- plackup"
+  },
+  "author": "zoncoen",
+  "license": "MIT",
+  "dependencies": {
+    "browserify": "^10.2.4",
+    "jquery": "^2.1.4",
+    "marked": "^0.3.3",
+    "react": "^0.13.3",
+    "reactify": "^1.1.1"
+  }
+}

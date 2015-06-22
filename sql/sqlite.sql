@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS comment (
+    id INTEGER NOT NULL PRIMARY KEY,
+    author VARCHAR(255),
+    text VARCHAR(255)
+);
