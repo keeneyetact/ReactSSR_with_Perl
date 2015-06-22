@@ -30348,7 +30348,7 @@ var CommentBox = React.createClass({displayName: "CommentBox",
     });
   },
   getInitialState: function() {
-    return {data: []};
+    return {data: this.props.initialState};
   },
   componentDidMount: function() {
     this.loadCommentsFromServer();
@@ -30405,8 +30405,10 @@ var CommentForm = React.createClass({displayName: "CommentForm",
   }
 });
 
+var initialState = JSON.parse(document.getElementById('initial-data').getAttribute('data-json'));
+
 React.render(
-  React.createElement(CommentBox, {url: "comments", pollInterval: 2000}),
+  React.createElement(CommentBox, {url: "comments", pollInterval: 2000, initialState: initialState}),
   document.getElementById('content')
 );
 

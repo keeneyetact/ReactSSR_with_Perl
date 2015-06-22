@@ -6,6 +6,7 @@ use File::Basename;
 use lib File::Spec->catdir( dirname(__FILE__), 'extlib', 'lib', 'perl5' );
 use lib File::Spec->catdir( dirname(__FILE__), 'lib' );
 use Amon2::Lite;
+use JSON;
 
 our $VERSION = '0.13';
 
@@ -14,14 +15,14 @@ sub load_config {
 }
 
 get '/' => sub {
-    my $c = shift;
-    return $c->render('index.tt');
+    my $c        = shift;
+    my $comments = _get_comments( $c->dbh );
+    return $c->render( 'index.tt', +{ initial_data => encode_json($comments) } );
 };
 
 get '/comments' => sub {
-    my $c = shift;
-    my $comments
-        = $c->dbh->selectall_arrayref( q{SELECT author, text FROM comment}, +{ Slice => +{} } );
+    my $c        = shift;
+    my $comments = _get_comments( $c->dbh );
     return $c->render_json($comments);
 };
 
@@ -35,6 +36,11 @@ post '/comments' => sub {
     $c->dbh->do( q{INSERT INTO comment (author, text) VALUES (?, ?)}, {}, $author, $text );
     return $c->render_json( +{ author => $author, text => $text } );
 };
+
+sub _get_comments {
+    my $dbh = shift;
+    return $dbh->selectall_arrayref( q{SELECT author, text FROM comment}, +{ Slice => +{} } );
+}
 
 __PACKAGE__->load_plugin('DBI');
 
@@ -53,6 +59,7 @@ __DATA__
   </head>
   <body>
     <div id="content"></div>
+    <script id="initial-data" type="text/plain" data-json="[% $initial_data %]"></script>
     <script type="text/javascript" src="/static/js/index.js"></script>
   </body>
 </html>
