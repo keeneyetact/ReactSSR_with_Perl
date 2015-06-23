@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "setup": "carton install && npm install && mkdir -p db && sqlite3 db/comment.db < sql/sqlite.sql",
-    "browserify": "browserify -t reactify static/js/_index.js -o static/js/index.js",
+    "browserify": "browserify -t reactify src/js/index.js -o static/js/index.js && browserify -t reactify src/js/renderer.js -o static/js/renderer.js",
     "start": "carton exec -- plackup"
   },
   "author": "zoncoen",

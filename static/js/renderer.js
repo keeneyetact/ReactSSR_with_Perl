@@ -30408,14 +30408,14 @@ var CommentForm = React.createClass({displayName: "CommentForm",
 module.exports = CommentBox;
 
 },{"jquery":2,"marked":3,"react":158}],160:[function(require,module,exports){
+(function (global){
 var React = require('react');
 
 var CommentBox = require('./component/comment-box');
 
-var initialState = JSON.parse(document.getElementById('initial-data').getAttribute('data-json'));
-React.render(
-  React.createElement(CommentBox, {url: "comments", pollInterval: 2000, initialState: initialState}),
-  document.getElementById('content')
-);
+global.render = function (initialState) {
+    return React.renderToString(React.createElement(CommentBox, {pollInterval: 2000, initialState: initialState}));
+}
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./component/comment-box":159,"react":158}]},{},[160]);
